@@ -7,5 +7,7 @@ repositories {
 }
 
 dependencies {
+    implementation("io.github.legendaryforge:LegendaryCore:0.0.0-SNAPSHOT")
+    implementation("io.github.legendaryforge:Legendary:0.0.0-SNAPSHOT")
     // Any external dependency you also want to include
 }

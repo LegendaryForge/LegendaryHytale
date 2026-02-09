@@ -43,4 +43,4 @@ build/
 .gradle
 .kotlin
 devserver
-/.idea/
+/.idea/server.log
