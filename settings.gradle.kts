@@ -9,10 +9,13 @@ hytale {
     useVersion("latest")
 
     repositories {
+        mavenLocal()
         // Any external repositories
     }
 
     dependencies {
+        implementation("io.github.legendaryforge:LegendaryCore:0.0.0-SNAPSHOT")
+        implementation("io.github.legendaryforge:Legendary:0.0.0-SNAPSHOT")
         // Any external dependency
     }
 
