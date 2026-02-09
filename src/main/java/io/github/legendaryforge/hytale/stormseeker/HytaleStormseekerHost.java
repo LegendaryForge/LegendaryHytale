@@ -10,110 +10,130 @@ import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.FlowHint
 import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.FlowingTrialSessionStep;
 import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.MotionSample;
 
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.math.vector.Vector3d;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class HytaleStormseekerHost implements StormseekerHostRuntime {
 
-private static final MotionSample ZERO_MOTION = new MotionSample(0, 0, 0, false);
-private static final double MOVING_THRESHOLD = 0.01;
+    private static final MotionSample ZERO_MOTION = new MotionSample(0, 0, 0, false);
+    private static final double MOVING_THRESHOLD = 0.01;
 
-private final Map<String, PlayerState> players = new ConcurrentHashMap<>();
+    private final Map<String, PlayerState> players = new ConcurrentHashMap<>();
 
-public void addPlayer(String playerId) {
-players.putIfAbsent(playerId, new PlayerState());
-}
+    public void addPlayer(String playerId, PlayerRef playerRef) {
+        players.putIfAbsent(playerId, new PlayerState(playerRef));
+    }
 
-public void removePlayer(String playerId) {
-players.remove(playerId);
-}
+    public void removePlayer(String playerId) {
+        players.remove(playerId);
+    }
 
-public void updatePosition(String playerId, double x, double y, double z) {
-PlayerState state = players.get(playerId);
-if (state != null) {
-state.updatePosition(x, y, z);
-}
-}
+    /**
+     * Called each tick to read positions from Hytale ECS and update motion samples.
+     */
+    public void updateAllPositions() {
+        for (PlayerState state : players.values()) {
+            try {
+                PlayerRef ref = state.playerRef;
+                if (ref == null || !ref.isValid()) {
+                    continue;
+                }
+                TransformComponent transform = ref.getComponent(TransformComponent.getComponentType());
+                if (transform == null) {
+                    continue;
+                }
+                Vector3d pos = transform.getPosition();
+                state.updatePosition(pos.getX(), pos.getY(), pos.getZ());
+            } catch (Exception e) {
+                // Defensive - dont let one player break the tick loop
+            }
+        }
+    }
 
-@Override
-public Iterable<String> playerIds() {
-return players.keySet();
-}
+    @Override
+    public Iterable<String> playerIds() {
+        return players.keySet();
+    }
 
-@Override
-public MotionSample motionSample(String playerId) {
-PlayerState state = players.get(playerId);
-if (state == null) {
-return ZERO_MOTION;
-}
-return state.lastMotion;
-}
+    @Override
+    public MotionSample motionSample(String playerId) {
+        PlayerState state = players.get(playerId);
+        if (state == null) {
+            return ZERO_MOTION;
+        }
+        return state.lastMotion;
+    }
 
-@Override
-public StormseekerProgress progress(String playerId) {
-PlayerState state = players.get(playerId);
-if (state == null) {
-return new StormseekerProgress();
-}
-return state.progress;
-}
+    @Override
+    public StormseekerProgress progress(String playerId) {
+        PlayerState state = players.get(playerId);
+        if (state == null) {
+            return new StormseekerProgress();
+        }
+        return state.progress;
+    }
 
-@Override
-public void emitFlowHint(String playerId, FlowHintIntent hint) {
-// Presentation hook — future particle/sound effects
-}
+    @Override
+    public void emitFlowHint(String playerId, FlowHintIntent hint) {
+    }
 
-@Override
-public void emitStormseekerMilestone(StormseekerMilestoneOutcome outcome) {
-System.out.println("[LegendaryHytale] Milestone: " + outcome);
-}
+    @Override
+    public void emitStormseekerMilestone(StormseekerMilestoneOutcome outcome) {
+        System.out.println("[LegendaryHytale] Milestone: " + outcome);
+    }
 
-@Override
-public void emitPhase1TickView(StormseekerPhase1TickView view) {
-// Presentation hook — no-op for now
-}
+    @Override
+    public void emitPhase1TickView(StormseekerPhase1TickView view) {
+    }
 
-@Override
-public void emitPhase1Outcome(StormseekerPhase1Outcome outcome) {
-StormseekerHostRuntime.super.emitPhase1Outcome(outcome);
-}
+    @Override
+    public void emitPhase1Outcome(StormseekerPhase1Outcome outcome) {
+        StormseekerHostRuntime.super.emitPhase1Outcome(outcome);
+    }
 
-@Override
-public void onFlowingTrialStep(String playerId, FlowingTrialSessionStep step) {
-// Presentation hook — no-op for now
-}
+    @Override
+    public void onFlowingTrialStep(String playerId, FlowingTrialSessionStep step) {
+    }
 
-@Override
-public void onAnchoredTrialStep(String playerId, AnchoredTrialSessionStep step) {
-// Presentation hook — no-op for now
-}
+    @Override
+    public void onAnchoredTrialStep(String playerId, AnchoredTrialSessionStep step) {
+    }
 
-private static final class PlayerState {
-final StormseekerProgress progress = new StormseekerProgress();
-MotionSample lastMotion = ZERO_MOTION;
+    private static final class PlayerState {
+        final PlayerRef playerRef;
+        final StormseekerProgress progress = new StormseekerProgress();
+        MotionSample lastMotion = ZERO_MOTION;
 
-double prevX = Double.NaN;
-double prevY = Double.NaN;
-double prevZ = Double.NaN;
+        double prevX = Double.NaN;
+        double prevY = Double.NaN;
+        double prevZ = Double.NaN;
 
-void updatePosition(double x, double y, double z) {
-if (Double.isNaN(prevX)) {
-prevX = x;
-prevY = y;
-prevZ = z;
-lastMotion = ZERO_MOTION;
-return;
-}
+        PlayerState(PlayerRef playerRef) {
+            this.playerRef = playerRef;
+        }
 
-double dx = x - prevX;
-double dy = y - prevY;
-double dz = z - prevZ;
-boolean moving = Math.sqrt(dx * dx + dy * dy + dz * dz) > MOVING_THRESHOLD;
+        void updatePosition(double x, double y, double z) {
+            if (Double.isNaN(prevX)) {
+                prevX = x;
+                prevY = y;
+                prevZ = z;
+                lastMotion = ZERO_MOTION;
+                return;
+            }
 
-lastMotion = new MotionSample(dx, dy, dz, moving);
-prevX = x;
-prevY = y;
-prevZ = z;
-}
-}
+            double dx = x - prevX;
+            double dy = y - prevY;
+            double dz = z - prevZ;
+            boolean moving = Math.sqrt(dx * dx + dy * dy + dz * dz) > MOVING_THRESHOLD;
+
+            lastMotion = new MotionSample(dx, dy, dz, moving);
+            prevX = x;
+            prevY = y;
+            prevZ = z;
+        }
+    }
 }
