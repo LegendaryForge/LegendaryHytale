@@ -41,7 +41,7 @@ public class LegendaryHytalePlugin extends JavaPlugin {
         String playerId = playerRef.getUuid().toString();
         String username = playerRef.getUsername();
 
-        stormseekerHost.addPlayer(playerId);
+        stormseekerHost.addPlayer(playerId, playerRef);
         getLogger().atInfo().log("Player joined: " + username + " (" + playerId + ") — quest tracking started.");
     }
 

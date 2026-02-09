@@ -16,6 +16,7 @@ public final class StormseekerTickSystem extends TickingSystem<EntityStore> {
 
     @Override
     public void tick(float dt, int tickCount, Store<EntityStore> store) {
+        host.updateAllPositions();
         StormseekerWiring.tick(host);
     }
 }
