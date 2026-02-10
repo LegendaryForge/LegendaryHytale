@@ -10,9 +10,11 @@ import io.github.legendaryforge.hytale.command.StormseekerAdvanceCommand;
 import io.github.legendaryforge.hytale.command.StormseekerStatusCommand;
 import io.github.legendaryforge.hytale.command.StormseekerTrialCommand;
 import io.github.legendaryforge.hytale.stormseeker.HytaleStormseekerHost;
+import io.github.legendaryforge.hytale.stormseeker.StormseekerProgressStore;
 import io.github.legendaryforge.hytale.stormseeker.StormseekerTickSystem;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 
 public class LegendaryHytalePlugin extends JavaPlugin {
 
@@ -27,7 +29,11 @@ public class LegendaryHytalePlugin extends JavaPlugin {
     protected void start() {
         getLogger().atInfo().log("LegendaryHytale plugin enabled!");
 
-        stormseekerHost = new HytaleStormseekerHost();
+        Path dataDir = Path.of("plugins", "LegendaryHytale", "data", "stormseeker");
+        StormseekerProgressStore progressStore = new StormseekerProgressStore(dataDir);
+        getLogger().atInfo().log("Progress store: " + dataDir.toAbsolutePath());
+
+        stormseekerHost = new HytaleStormseekerHost(progressStore);
         getLogger().atInfo().log("Stormseeker host runtime created.");
 
         StormseekerTickSystem tickSystem = new StormseekerTickSystem(stormseekerHost);
@@ -64,6 +70,9 @@ public class LegendaryHytalePlugin extends JavaPlugin {
 
     @Override
     protected void shutdown() {
+        if (stormseekerHost != null) {
+            stormseekerHost.saveAll();
+        }
         getLogger().atInfo().log("LegendaryHytale plugin disabled.");
     }
 }

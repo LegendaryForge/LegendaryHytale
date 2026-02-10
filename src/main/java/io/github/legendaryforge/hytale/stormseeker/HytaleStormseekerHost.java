@@ -23,13 +23,33 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
     private static final double MOVING_THRESHOLD = 0.01;
 
     private final Map<String, PlayerState> players = new ConcurrentHashMap<>();
+    private final StormseekerProgressStore store;
+
+    public HytaleStormseekerHost(StormseekerProgressStore store) {
+        this.store = store;
+    }
 
     public void addPlayer(String playerId, PlayerRef playerRef) {
-        players.putIfAbsent(playerId, new PlayerState(playerRef));
+        StormseekerProgress progress = store.load(playerId);
+        players.putIfAbsent(playerId, new PlayerState(playerRef, progress));
+        System.out.println("[LegendaryHytale] Loaded progress for " + playerId + ": phase=" + progress.phase()
+                + " sigilA=" + progress.hasSigilA() + " sigilB=" + progress.hasSigilB());
     }
 
     public void removePlayer(String playerId) {
-        players.remove(playerId);
+        PlayerState state = players.remove(playerId);
+        if (state != null) {
+            store.save(playerId, state.progress);
+            System.out.println("[LegendaryHytale] Saved progress for " + playerId + ": phase=" + state.progress.phase());
+        }
+    }
+
+    /** Saves all current players' progress (call on shutdown). */
+    public void saveAll() {
+        for (Map.Entry<String, PlayerState> entry : players.entrySet()) {
+            store.save(entry.getKey(), entry.getValue().progress);
+        }
+        System.out.println("[LegendaryHytale] Saved progress for " + players.size() + " player(s).");
     }
 
     public void updateAllPositions() {
@@ -46,7 +66,7 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
                 Vector3d pos = transform.getPosition();
                 state.updatePosition(pos.getX(), pos.getY(), pos.getZ());
             } catch (Exception e) {
-                // Defensive - dont let one player break the tick loop
+                // Defensive - don't let one player break the tick loop
             }
         }
     }
@@ -90,6 +110,12 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
     @Override
     public void emitStormseekerMilestone(StormseekerMilestoneOutcome outcome) {
         System.out.println("[LegendaryHytale] Milestone: " + outcome);
+        // Save immediately on milestone (sigil grants, phase transitions)
+        String playerId = outcome.playerId();
+        PlayerState state = players.get(playerId);
+        if (state != null) {
+            store.save(playerId, state.progress);
+        }
     }
 
     @Override
@@ -115,7 +141,7 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
 
     private static final class PlayerState {
         final PlayerRef playerRef;
-        final StormseekerProgress progress = new StormseekerProgress();
+        final StormseekerProgress progress;
         MotionSample lastMotion = ZERO_MOTION;
         FlowingTrialSessionStep lastFlowingStep = null;
 
@@ -123,8 +149,9 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
         double prevY = Double.NaN;
         double prevZ = Double.NaN;
 
-        PlayerState(PlayerRef playerRef) {
+        PlayerState(PlayerRef playerRef, StormseekerProgress progress) {
             this.playerRef = playerRef;
+            this.progress = progress;
         }
 
         void updatePosition(double x, double y, double z) {
