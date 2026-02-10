@@ -12,13 +12,13 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import io.github.legendaryforge.hytale.stormseeker.HytaleStormseekerHost;
 import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerProgress;
+import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.FlowingTrialSessionStep;
 import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.MotionSample;
 
 /**
- * Debug command: /stormseeker status
+ * Debug command: /stormseeker
  *
- * <p>Shows the executing player's current Stormseeker quest state including
- * phase, sigils, motion sample, and position.
+ * <p>Shows quest state, motion, position, and Flowing Trial status.
  */
 public class StormseekerStatusCommand extends AbstractPlayerCommand {
 
@@ -51,7 +51,21 @@ public class StormseekerStatusCommand extends AbstractPlayerCommand {
         var pos = playerRef.getTransform();
         if (pos != null) {
             var p = pos.getPosition();
-            sb.append("Position: ").append(String.format("%.1f, %.1f, %.1f", p.getX(), p.getY(), p.getZ()));
+            sb.append("Position: ").append(String.format("%.1f, %.1f, %.1f", p.getX(), p.getY(), p.getZ())).append("\n");
+        }
+
+        FlowingTrialSessionStep flowStep = host.lastFlowingStep(playerId);
+        if (flowStep != null) {
+            sb.append("--- Flowing Trial ---\n");
+            sb.append("Trial Status: ").append(flowStep.status()).append("\n");
+            sb.append("Hint: intensity=").append(String.format("%.2f", flowStep.hint().intensity()));
+            sb.append(" stability=").append(String.format("%.2f", flowStep.hint().stability()));
+            sb.append(" dir=").append(String.format("%.2f", flowStep.hint().directionHintStrength())).append("\n");
+            if (flowStep.sigilGrantedThisTick()) {
+                sb.append(">>> SIGIL A GRANTED THIS TICK <<<\n");
+            }
+        } else {
+            sb.append("Flowing Trial: not active\n");
         }
 
         sendText(context, sb.toString());
