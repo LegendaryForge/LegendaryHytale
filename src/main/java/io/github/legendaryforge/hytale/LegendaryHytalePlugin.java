@@ -6,7 +6,9 @@ import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 
+import io.github.legendaryforge.hytale.command.StormseekerAdvanceCommand;
 import io.github.legendaryforge.hytale.command.StormseekerStatusCommand;
+import io.github.legendaryforge.hytale.command.StormseekerTrialCommand;
 import io.github.legendaryforge.hytale.stormseeker.HytaleStormseekerHost;
 import io.github.legendaryforge.hytale.stormseeker.StormseekerTickSystem;
 
@@ -37,7 +39,9 @@ public class LegendaryHytalePlugin extends JavaPlugin {
         getLogger().atInfo().log("Player event listeners registered.");
 
         getCommandRegistry().registerCommand(new StormseekerStatusCommand(stormseekerHost));
-        getLogger().atInfo().log("Commands registered.");
+        getCommandRegistry().registerCommand(new StormseekerAdvanceCommand(stormseekerHost));
+        getCommandRegistry().registerCommand(new StormseekerTrialCommand(stormseekerHost));
+        getLogger().atInfo().log("Commands registered: /stormseeker, /ss-advance, /ss-trial");
     }
 
     private void onPlayerConnect(PlayerConnectEvent event) {
