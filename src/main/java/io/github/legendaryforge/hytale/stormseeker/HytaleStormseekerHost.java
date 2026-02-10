@@ -32,9 +32,6 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
         players.remove(playerId);
     }
 
-    /**
-     * Called each tick to read positions from Hytale ECS and update motion samples.
-     */
     public void updateAllPositions() {
         for (PlayerState state : players.values()) {
             try {
@@ -52,6 +49,15 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
                 // Defensive - dont let one player break the tick loop
             }
         }
+    }
+
+    /** Returns the last Flowing Trial step for a player, or null if none yet. */
+    public FlowingTrialSessionStep lastFlowingStep(String playerId) {
+        PlayerState state = players.get(playerId);
+        if (state == null) {
+            return null;
+        }
+        return state.lastFlowingStep;
     }
 
     @Override
@@ -97,6 +103,10 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
 
     @Override
     public void onFlowingTrialStep(String playerId, FlowingTrialSessionStep step) {
+        PlayerState state = players.get(playerId);
+        if (state != null) {
+            state.lastFlowingStep = step;
+        }
     }
 
     @Override
@@ -107,6 +117,7 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
         final PlayerRef playerRef;
         final StormseekerProgress progress = new StormseekerProgress();
         MotionSample lastMotion = ZERO_MOTION;
+        FlowingTrialSessionStep lastFlowingStep = null;
 
         double prevX = Double.NaN;
         double prevY = Double.NaN;
