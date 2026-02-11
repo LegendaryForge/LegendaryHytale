@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import io.github.legendaryforge.hytale.stormseeker.HytaleStormseekerHost;
+import io.github.legendaryforge.hytale.stormseeker.HytaleWeatherReader;
 import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerProgress;
 import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.FlowingTrialSessionStep;
 import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.MotionSample;
@@ -18,7 +19,7 @@ import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.MotionSa
 /**
  * Debug command: /stormseeker
  *
- * <p>Shows quest state, motion, position, and Flowing Trial status.
+ * <p>Shows quest state, motion, position, weather, and Flowing Trial status.
  */
 public class StormseekerStatusCommand extends AbstractPlayerCommand {
 
@@ -54,6 +55,14 @@ public class StormseekerStatusCommand extends AbstractPlayerCommand {
             sb.append("Position: ").append(String.format("%.1f, %.1f, %.1f", p.getX(), p.getY(), p.getZ())).append("\n");
         }
 
+        // Weather
+        String weatherId = HytaleWeatherReader.getWeatherId(playerRef);
+        int weatherIndex = HytaleWeatherReader.getWeatherIndex(playerRef);
+        boolean isStorm = HytaleWeatherReader.isStorm(playerRef);
+        sb.append("Weather: ").append(weatherId).append(" (index=").append(weatherIndex).append(")");
+        sb.append(isStorm ? " [STORM]" : "").append("\n");
+
+        // Flowing Trial
         FlowingTrialSessionStep flowStep = host.lastFlowingStep(playerId);
         if (flowStep != null) {
             sb.append("--- Flowing Trial ---\n");
