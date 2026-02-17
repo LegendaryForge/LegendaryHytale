@@ -47,7 +47,7 @@ public final class StormseekerProgressStore {
             StormseekerProgress progress = new StormseekerProgress();
 
             // Advance to saved phase
-            String phaseName = props.getProperty("phase", "PHASE_0_UNEASE");
+            String phaseName = props.getProperty("phase", "PHASE_0_WATCHING_ELEMENTAL");
             StormseekerPhase targetPhase = StormseekerPhase.valueOf(phaseName);
             while (progress.phase() != targetPhase && !progress.phase().isFinal()) {
                 progress.advanceToNextOrThrow(progress.phase().next());
