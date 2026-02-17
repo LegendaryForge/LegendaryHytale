@@ -2,8 +2,8 @@ package io.github.legendaryforge.hytale.stormseeker;
 
 import io.github.legendaryforge.legendary.mod.runtime.StormseekerHostRuntime;
 import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerMilestoneOutcome;
-import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerPhase1Outcome;
-import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerPhase1TickView;
+import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerFlowingTrialOutcome;
+import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerFlowingTrialTickView;
 import io.github.legendaryforge.legendary.mod.stormseeker.quest.StormseekerProgress;
 import io.github.legendaryforge.legendary.mod.stormseeker.trial.anchored.AnchoredTrialSessionStep;
 import io.github.legendaryforge.legendary.mod.stormseeker.trial.flowing.FlowHintIntent;
@@ -119,12 +119,12 @@ public final class HytaleStormseekerHost implements StormseekerHostRuntime {
     }
 
     @Override
-    public void emitPhase1TickView(StormseekerPhase1TickView view) {
+    public void emitFlowingTrialTickView(StormseekerFlowingTrialTickView view) {
     }
 
     @Override
-    public void emitPhase1Outcome(StormseekerPhase1Outcome outcome) {
-        StormseekerHostRuntime.super.emitPhase1Outcome(outcome);
+    public void emitFlowingTrialOutcome(StormseekerFlowingTrialOutcome outcome) {
+        StormseekerHostRuntime.super.emitFlowingTrialOutcome(outcome);
     }
 
     @Override
