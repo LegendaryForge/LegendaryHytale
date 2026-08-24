@@ -1,8 +1,9 @@
-rootProject.name = "io.github.legendaryforge.hytale"
-
 plugins {
     id("dev.scaffoldit") version "0.2.+"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+
+rootProject.name = "io.github.legendaryforge.hytale"
 
 hytale {
     usePatchline("release")
